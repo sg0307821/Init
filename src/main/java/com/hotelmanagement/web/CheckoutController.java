@@ -49,9 +49,18 @@ public class CheckoutController extends HttpServlet {
             int bookingId = Integer.parseInt(bookingIdStr);
             // Update the booking status in the database
             checkoutDao.updateBookingStatusToPaid(bookingId);
+            Booking booking = bookingDAO.getBookingById(bookingId);
             Room room = RoomDao.getBookingById(bookingId);
             int RoomNumber =room.getRoomNumber();
             parkingDao.updateParkingStatus(RoomNumber);
+            request.setAttribute("bookingId", booking.getBookingId());
+            request.setAttribute("customerId", booking.getCustomerId());
+            request.setAttribute("email", booking.getEmail());
+            request.setAttribute("checkInDate", booking.getCheckInDate());
+            request.setAttribute("checkOutDate", booking.getCheckOutDate());
+            request.setAttribute("roomType", booking.getRoomType());
+            request.setAttribute("roomView", booking.getRoomView());
+            request.setAttribute("price", booking.getPrice());
             
             //GetWithBookingId((bookingId), request, response);
             //Booking booking = bookingDAO.getBookingById(bookingId);

@@ -1,87 +1,111 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.util.concurrent.TimeUnit" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Hotel Room Billing</title>
+    <meta charset="UTF-8">
+    <title>Billing Details</title>
     <style>
         body {
-            font-family: Arial, sans-serif; /* Sets the font for the page */
-            background-color: #f4f4f4; /* Light grey background */
-            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             padding: 20px;
-            color: #333; /* Dark grey text color */
+        }
+        .container {
+            background: white;
+            width: 70%;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         h2 {
-            color: #5D6975; /* Subtle blue-grey text color for headings */
+            color: #333;
+            text-align: center;
         }
-        form {
-            background: white; /* White background for the form */
-            max-width: 400px; /* Maximum width of the form */
-            margin: 20px auto; /* Center the form horizontally */
-            padding: 20px; /* Padding inside the form */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow around the form */
+        .detail {
+            margin: 10px 0;
+            padding: 8px;
+            font-size: 16px;
+            border-bottom: 1px solid #ccc;
         }
-        label {
-            font-weight: bold; /* Makes labels bold */
-            margin-top: 10px; /* Space above labels */
-            display: block; /* Ensures the label and input appear on new lines */
+        .detail label {
+            font-weight: bold;
         }
-        input[type="number"],
-        select {
-            width: 100%; /* Full-width inputs and select box */
-            padding: 8px; /* Padding inside the inputs */
-            margin-top: 5px; /* Space above inputs */
-            box-sizing: border-box; /* Box sizing to include padding in width */
+        .detail span {
+            float: right;
+            color: #555;
         }
-        input[type="submit"] {
-            background-color: #4CAF50; /* Green background color */
-            color: white; /* White text color */
-            padding: 10px; /* Padding inside the button */
-            border: none; /* No border */
-            border-radius: 5px; /* Rounded corners */
-            cursor: pointer; /* Pointer cursor on hover */
-            margin-top: 20px; /* Space above the button */
+        .button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        input[type="submit"]:hover {
-            background-color: #45a049; /* Darker green background on hover */
+        .button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <h2>Hotel Room Billing Form</h2>
-    <form action="hotelBilling.jsp" method="post">
-        <label for="roomType">Select Room Type:</label>
-        <select name="roomType" id="roomType">
-            <option value="standard">Standard Room</option>
-            <option value="deluxe">Deluxe Room</option>
-            <option value="suite">Suite</option>
-        </select>
-        <br><br>
-        <label for="nights">Number of Nights:</label>
-        <input type="number" id="nights" name="nights" min="1" max="30">
-        <br><br>
-        <input type="submit" value="Calculate Total">
-    </form>
+    <div class="container">
+        <h2>Billing Details</h2>
+        <form action="Billing/confirmPayment.jsp" method="post">
+            <% 
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date checkInDate = null;
+                Date checkOutDate = null;
 
-<% 
-    // Server-side script to calculate the total cost after the form is submitted
-    String roomType = request.getParameter("roomType");
-    String nightsStr = request.getParameter("nights");
-    if (roomType != null && nightsStr != null && !nightsStr.isEmpty()) {
-        int nights = Integer.parseInt(nightsStr);
-        double rate = 0.0;
-        if ("standard".equals(roomType)) {
-            rate = 100.0; // Standard room rate per night
-        } else if ("deluxe".equals(roomType)) {
-            rate = 150.0; // Deluxe room rate per night
-        } else if ("suite".equals(roomType)) {
-            rate = 200.0; // Suite room rate per night
-        }
-        double totalCost = rate * nights;
+                // Retrieve and convert date attributes
+                Object checkInObj = request.getAttribute("checkInDate");
+                Object checkOutObj = request.getAttribute("checkOutDate");
 
-        // Display the result
-        out.println("<h3>Total Cost for " + nights + " night(s) in a " + roomType + " room: $" + totalCost + "</h3>");
-    }
-%>
+                if (checkInObj instanceof java.sql.Date) {
+                    checkInDate = new Date(((java.sql.Date) checkInObj).getTime());
+                }
+
+                if (checkOutObj instanceof java.sql.Date) {
+                    checkOutDate = new Date(((java.sql.Date) checkOutObj).getTime());
+                }
+
+                // Calculate the number of nights
+                long diff = 0;
+                if (checkInDate != null && checkOutDate != null) {
+                    long diffInMillies = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+                    diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+                }
+
+                double pricePerNight = 0;
+                Object priceObj = request.getAttribute("price");
+                if (priceObj instanceof String) {
+                    pricePerNight = Double.parseDouble((String) priceObj);
+                } else if (priceObj instanceof Number) {
+                    pricePerNight = ((Number) priceObj).doubleValue();
+                }
+
+                double totalCost = diff * pricePerNight;
+            %>
+            <div class="detail"><label>Booking ID:</label><span><%= request.getAttribute("bookingId") %></span></div>
+            <div class="detail"><label>Customer ID:</label><span><%= request.getAttribute("customerId") %></span></div>
+            <div class="detail"><label>Email:</label><span><%= request.getAttribute("email") %></span></div>
+            <div class="detail"><label>Check-In Date:</label><span><%= sdf.format(checkInDate) %></span></div>
+            <div class="detail"><label>Check-Out Date:</label><span><%= sdf.format(checkOutDate) %></span></div>
+            <div class="detail"><label>Room Type:</label><span><%= request.getAttribute("roomType") %></span></div>
+            <div class="detail"><label>Room View:</label><span><%= request.getAttribute("roomView") %></span></div>
+            <div class="detail"><label>Price per Night:</label><span>€<%= String.format("%,.2f", pricePerNight) %></span></div>
+            <div class="detail"><label>Total Nights:</label><span><%= diff %></span></div>
+            <div class="detail"><label>Total Cost:</label><span>€<%= String.format("%,.2f", totalCost) %></span></div>
+            <input type="submit" value="Confirm Payment" class="button">
+        </form>
+    </div>
 </body>
 </html>

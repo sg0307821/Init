@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import com.hotelmanagement.dao.AvailablityRoomDao;
 import com.hotelmanagement.dao.BookingDao;
 import com.hotelmanagement.dao.CustomerDao;
+import com.hotelmanagement.dao.VoucherDao;
 import com.hotelmanagement.dao.roomDao;
 import com.hotelmanagement.model.AvailablityRoom;
 import com.hotelmanagement.model.Booking;
@@ -26,12 +27,14 @@ public class Room_Checkin_Controller extends HttpServlet{
 	
 	private roomDao RoomDAO;
 	private AvailablityRoomDao availablityRoomDao;
+	private VoucherDao voucherDao;
 	@Override
     public void init() throws ServletException {
         super.init();
         // Initialize your DAO here
         this.RoomDAO = new roomDao();
         this.availablityRoomDao=new AvailablityRoomDao();
+        
     }
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

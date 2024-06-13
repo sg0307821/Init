@@ -56,6 +56,7 @@
 </style>
 </head>
 <body>
+<jsp:include page="./common/header.jsp"></jsp:include>
 	<h2>Welcome to Hotel Parking Facility!</h2>
 		<form action="ParkingForm" method="post">
 			<label for="emailaddress">Enter your email address used for reservation :</label>
